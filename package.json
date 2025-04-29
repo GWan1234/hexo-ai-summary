@@ -1,5 +1,5 @@
 {
-  "name": "hexo-ai-summary",
+  "name": "hexo-ai-summary-liushen",
   "version": "1.0.0",
   "description": "使用ai自动为文章生成摘要，可以选择使用chatgpt或其他模型",
   "main": "index.js",
