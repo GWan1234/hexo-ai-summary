@@ -12,7 +12,7 @@ module.exports = async function ai(token, api, model, content, prompt, max_token
     model: model || 'gpt-3.5-turbo',
     messages: [
       { role: 'system', content: prompt },
-      { role: 'user', content: content }
+      { role: 'user', content: content + prompt }
     ],
     max_tokens: Number(max_token) || 512  // 使用512作为默认值
   }
