@@ -1,44 +1,53 @@
-module.exports = function strip(content, config) {
-  // 获取配置中的 ignore_rules
+module.exports = function strip(content, title, config) {
   const ignoreRules = config.ignoreRules || [];
+  const logLevel = config.logger ?? 1; // 默认为 NORMAL
 
-  // 遍历配置规则并应用正则匹配忽略内容
+  // 1. 应用忽略规则
   if (Array.isArray(ignoreRules) && ignoreRules.length > 0) {
     ignoreRules.forEach(rule => {
       const regex = new RegExp(rule, 'g');
-      content = content.replace(regex, '');  // 替换匹配到的部分为空字符串
+      content = content.replace(regex, '');
     });
   } else {
-    if (config.logger) console.warn('[Hexo-AI-Summary-LiuShen] ignore_rules 似乎没有设置或者无效，跳过处理');
+    if (logLevel >= 1) {
+      console.warn('[Hexo-AI-Summary-LiuShen] ignore_rules 未设置或无效，跳过处理');
+    }
   }
 
-  if (config.logger) console.log('[Hexo-AI-Summary-LiuShen] 处理前字符串长度：', content.length);
+  // 在 NORMAL 或 VERBOSE 日志等级时输出原始字符串长度
+  if (logLevel >= 1) {
+    console.log('[Hexo-AI-Summary-LiuShen] 原始字符串长度：', content.length);
+  }
 
-  // 去掉图片链接中的地址（保留 alt 文本）
-  content = content.replace(/!\[.*?\]\(.*?\)/g, '![]');
+  // 2. 清理内容
+  content = content
+    .replace(/```[\s\S]*?```/g, '')           // 代码块
+    // .replace(/`[^`\n]+`/g, '')                // 行内代码
+    .replace(/{%[^%]*%}/g, '')                // Hexo 标签
+    .replace(/^\|.*?\|.*$/gm, '')             // 表格行
+    .replace(/!\[.*?\]\(.*?\)/g, '')          // 图片
+    .replace(/\[(.*?)\]\(.*?\)/g, '$1')       // 超链接文本
+    .replace(/<[^>]+>/g, '')                  // HTML 标签
+    .replace(/&nbsp;/g, ' ')                  // 空格实体
+    .replace(/\n{2,}/g, '\n')                 // 多重换行压缩
+    .replace(/^\s+|\s+$/gm, '')               // 行首尾空格
+    .replace(/[ \t]+/g, ' ')                  // 多空格压缩
+    .trim();
 
-  // 去掉超链接中的地址（保留文本）
-  content = content.replace(/\[.*?\]\(.*?\)/g, '[]');
+  // 3. 拼接标题
+  const combined = (title ? title.trim() + '\n\n' : '') + content;
 
-  // 去掉所有 HTML 标签
-  content = content.replace(/<[^>]+>/g, '');
+  // 4. 截断处理
+  const maxLen = typeof config.max_token === 'number' ? config.max_token : 1000;
+  let final = combined;
+  if (combined.length > maxLen) {
+    final = combined.slice(0, maxLen).trim() + '...';
+  }
 
-  // 去掉 &nbsp;
-  content = content.replace(/&nbsp;/g, ''); 
+  // 在 NORMAL 或 VERBOSE 日志等级时输出最终输出长度
+  if (logLevel >= 1) {
+    console.log('[Hexo-AI-Summary-LiuShen] 最终输出长度：', final.length);
+  }
 
-  // 去掉代码块
-  content = content.replace(/```[\s\S]*?```/g, '');
-
-  // 去掉代码行
-  content = content.replace(/`.*?`/g, '');
-
-  // 去掉换行符
-  content = content.replace(/\n/g, '');
-
-  // 去掉多余的空格
-  content = content.replace(/\s+/g, ' ');
-
-  if (config.logger) console.log('[Hexo-AI-Summary-LiuShen] 处理后字符串长度：', content.length);
-
-  return content.trim();
-}
+  return final;
+};

@@ -1,6 +1,6 @@
 const fetch = require('node-fetch')
 
-module.exports = async function ai(token, api, model, content, prompt, max_token) {
+module.exports = async function ai(token, api, model, content, prompt) {
   const url = api || 'https://api.openai.com/v1/chat/completions'
 
   const headers = {
@@ -11,10 +11,10 @@ module.exports = async function ai(token, api, model, content, prompt, max_token
   const body = {
     model: model || 'gpt-3.5-turbo',
     messages: [
-      { role: 'system', content: prompt },
-      { role: 'user', content: content + prompt }
+      { role: 'system', content: "所有摘要内容均不要换行，不要分段，不要分点，写在一段文本内即可！" + prompt },
+      { role: 'user', content: content}
     ],
-    max_tokens: Number(max_token) || 512  // 使用512作为默认值
+    max_tokens: 300
   }
 
   try {
@@ -32,11 +32,28 @@ module.exports = async function ai(token, api, model, content, prompt, max_token
     const json = await res.json()
 
     // 如果返回格式不正确，抛出错误
-    if (!json.choices || json.choices.length === 0 || !json.choices[0].message?.content) {
+    const reply = json.choices?.[0]?.message?.content?.trim()
+    if (!reply) {
       throw new Error('OpenAI 返回的响应格式不正确')
     }
 
-    return json.choices[0].message.content.trim()
+    // 后处理与校验
+    const cleaned = reply
+      .replace(/[\r\n]+/g, ' ') // 去换行
+      .replace(/\s+/g, ' ')     // 合并多空格
+      .trim()
+
+    // 校验非法字符和最大长度
+    const illegalChars = /[#`]/g
+    if (cleaned.length > 500) {
+      console.info('[Hexo-AI-Summary-LiuShen] AI 返回摘要不符合格式要求（长度超限）')
+    }
+
+    if (cleaned.match(illegalChars)) {
+      console.info('[Hexo-AI-Summary-LiuShen] AI 返回摘要不符合格式要求（包含非法字符）')
+    }
+
+    return cleaned
 
   } catch (error) {
     // 捕获并抛出请求中的任何错误
