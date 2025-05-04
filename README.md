@@ -36,7 +36,7 @@ aisummary:
   enable: true               # 是否启用插件，如果关闭，也可以在文章顶部的is_summary字段单独设置是否启用，反之也可以配置是否单独禁用
   cover_all: false           # 是否覆盖已有摘要，默认只生成缺失的，注意开启后，可能会导致过量的api使用！
   summary_field: summary     # 摘要写入字段名（建议保留为 summary），重要配置，谨慎修改！！！！！！！
-  logger: 2                  # 日志等级（0=仅错误，1=生成+错误，2=全部）
+  logger: 1                  # 日志等级（0=仅错误，1=生成+错误，2=全部）
 
   # AI 接口配置
   api: https://api.openai.com/v1/chat/completions     # OpenAI 兼容模型接口
