@@ -35,7 +35,7 @@ hexo.extend.filter.register('before_post_render', async function (data) {
     }
 
     return await limit(async () => {
-        if (!config.enable && !data.is_summary) {
+        if (!config.enable || data.is_summary === false) {
             if (logLevel >= LOG_LEVELS.VERBOSE) {
                 console.info(`[Hexo-AI-Summary-LiuShen] 文章 ${data.title} 被标记为不进行摘要，跳过`)
             }
