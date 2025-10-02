@@ -83,18 +83,18 @@ hexo.extend.filter.register('before_post_render', async function (data) {
             if (logLevel >= LOG_LEVELS.NORMAL) {
                 console.info(`[Hexo-AI-Summary-LiuShen] 摘要 ${data.title} 完成`)
             }
-
-            // 如果设置了休眠时间，则等待指定时间(毫秒)
-            if (sleepTime > 0) {
-                if (logLevel >= LOG_LEVELS.VERBOSE) {
-                    console.info(`[Hexo-AI-Summary-LiuShen] 处理完毕一篇文章，休眠 ${sleepTime} 毫秒...`)
-                }
-                await new Promise(resolve => setTimeout(resolve, sleepTime))
-            }
         } catch (err) {
             if (logLevel >= LOG_LEVELS.SILENT) {
                 console.error(`[Hexo-AI-Summary-LiuShen] 生成摘要失败：${data.title}\n${err.message}`)
             }
+        }
+
+        // 如果设置了休眠时间，则等待指定时间(毫秒)
+        if (sleepTime > 0) {
+            if (logLevel >= LOG_LEVELS.VERBOSE) {
+                console.info(`[Hexo-AI-Summary-LiuShen] 处理完毕一篇文章，休眠 ${sleepTime} 毫秒...`)
+            }
+            await new Promise(resolve => setTimeout(resolve, sleepTime))
         }
 
         return data
