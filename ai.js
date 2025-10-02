@@ -41,6 +41,7 @@ module.exports = async function ai(token, api, model, content, prompt) {
     const cleaned = reply
       .replace(/[\r\n]+/g, ' ') // 去换行
       .replace(/\s+/g, ' ')     // 合并多空格
+      .replace(/[`]/g, '')      // 去"`"符号
       .trim()
 
     // 校验非法字符和最大长度
