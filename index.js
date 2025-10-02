@@ -13,6 +13,7 @@ if (!config.api) {
 const limit = pLimit(config.concurrency || 2)  // 设置最大并发数，比如 2
 const fieldName = config.summary_field || 'summary'   // 默认为 'summary'
 const defaultPrompt = config.prompt || '请为这些内容生成一个简短的摘要：'
+const sleepTime = config.sleep_time || 0  // 请求间隔时间，单位毫秒，默认为0
 
 // 日志等级枚举
 const LOG_LEVELS = {
@@ -86,6 +87,14 @@ hexo.extend.filter.register('before_post_render', async function (data) {
             if (logLevel >= LOG_LEVELS.SILENT) {
                 console.error(`[Hexo-AI-Summary-LiuShen] 生成摘要失败：${data.title}\n${err.message}`)
             }
+        }
+
+        // 如果设置了休眠时间，则等待指定时间(毫秒)
+        if (sleepTime > 0) {
+            if (logLevel >= LOG_LEVELS.VERBOSE) {
+                console.info(`[Hexo-AI-Summary-LiuShen] 处理完毕一篇文章，休眠 ${sleepTime} 毫秒...`)
+            }
+            await new Promise(resolve => setTimeout(resolve, sleepTime))
         }
 
         return data
